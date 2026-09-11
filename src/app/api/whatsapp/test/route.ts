@@ -33,13 +33,11 @@ export async function POST(request: NextRequest) {
     const pdfFilename = `${testDonor.receiptId}.pdf`;
 
     // Attempt delivery via gateway
-    const overrideGatewayUrl = body.gatewayUrl || request.headers.get("x-gateway-url") || undefined;
     const result = await sendReceiptViaGateway(
       testDonor,
       pdfBuffer,
       pdfFilename,
-      `${request.nextUrl.origin}/api/receipt/${pdfFilename}`,
-      overrideGatewayUrl
+      `${request.nextUrl.origin}/api/receipt/${pdfFilename}`
     );
 
     return NextResponse.json({

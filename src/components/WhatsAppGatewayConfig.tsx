@@ -21,54 +21,15 @@ export default function WhatsAppGatewayConfig() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Cloud Gateway (Render URL) state
-  const [cloudUrlInput, setCloudUrlInput] = useState("");
-  const [connectedCloudUrl, setConnectedCloudUrl] = useState("");
-  const [cloudUrlError, setCloudUrlError] = useState("");
-
   // Test send state
   const [testPhone, setTestPhone] = useState("");
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  // Load saved cloud worker URL on mount
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("whatsapp_cloud_url") || "";
-      if (saved) {
-        setCloudUrlInput(saved);
-        setConnectedCloudUrl(saved);
-      }
-    }
-  }, []);
-
-  const fetchLocalStatus = useCallback(async (overrideUrl?: string) => {
+  const fetchLocalStatus = useCallback(async () => {
     try {
-      const cloudUrl = overrideUrl !== undefined
-        ? overrideUrl
-        : (typeof window !== "undefined" ? localStorage.getItem("whatsapp_cloud_url") || "" : "");
-
-      let data;
-      if (cloudUrl && cloudUrl.trim()) {
-        const cleanUrl = cloudUrl.trim().replace(/\/$/, "");
-        try {
-          const res = await fetch(`${cleanUrl}/status`, { signal: AbortSignal.timeout(5000) });
-          if (res.ok) {
-            data = await res.json();
-            setCloudUrlError("");
-          } else {
-            throw new Error(`Service returned HTTP ${res.status}`);
-          }
-        } catch (fetchErr: unknown) {
-          const errMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
-          setCloudUrlError(`Could not reach ${cleanUrl} (${errMsg}). Make sure Render service is active.`);
-          data = { available: false, connected: false, state: "offline" };
-        }
-      } else {
-        const res = await fetch("/api/whatsapp/local");
-        data = await res.json();
-      }
-
+      const res = await fetch("/api/whatsapp/local");
+      const data = await res.json();
       setLocalStatus(data);
     } catch {
       setLocalStatus({
@@ -93,44 +54,14 @@ export default function WhatsAppGatewayConfig() {
     return () => clearInterval(interval);
   }, [fetchLocalStatus]);
 
-  async function handleConnectCloudUrl() {
-    const clean = cloudUrlInput.trim().replace(/\/$/, "");
-    if (!clean || !clean.startsWith("http")) {
-      setCloudUrlError("Please enter a valid URL (e.g. https://ganesh-whatsapp.onrender.com)");
-      return;
-    }
-    setCloudUrlError("");
-    setIsLoading(true);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("whatsapp_cloud_url", clean);
-    }
-    setConnectedCloudUrl(clean);
-    await fetchLocalStatus(clean);
-  }
-
-  function handleDisconnectCloudUrl() {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("whatsapp_cloud_url");
-    }
-    setCloudUrlInput("");
-    setConnectedCloudUrl("");
-    setCloudUrlError("");
-    setIsLoading(true);
-    fetchLocalStatus("");
-  }
-
   async function handleLogoutLocal() {
     if (!confirm("Are you sure you want to disconnect this WhatsApp number?")) return;
     try {
-      if (connectedCloudUrl) {
-        await fetch(`${connectedCloudUrl.replace(/\/$/, "")}/logout`, { method: "POST" });
-      } else {
-        await fetch("/api/whatsapp/local", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "logout" }),
-        });
-      }
+      await fetch("/api/whatsapp/local", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "logout" }),
+      });
       fetchLocalStatus();
     } catch (err) {
       console.error("Error logging out:", err);
@@ -150,10 +81,7 @@ export default function WhatsAppGatewayConfig() {
       const res = await fetch("/api/whatsapp/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: testPhone,
-          gatewayUrl: connectedCloudUrl || undefined,
-        }),
+        body: JSON.stringify({ phone: testPhone }),
       });
       const data = await res.json();
       setTestResult({
@@ -523,94 +451,6 @@ export default function WhatsAppGatewayConfig() {
                 </div>
               </div>
             )}
-
-            {/* Render Cloud URL Connection Box */}
-            <div
-              style={{
-                width: "100%",
-                marginTop: "20px",
-                padding: "16px",
-                background: "rgba(10, 5, 2, 0.6)",
-                borderRadius: "14px",
-                border: "1px solid rgba(255, 179, 0, 0.25)",
-                textAlign: "left",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
-                <span style={{ fontSize: "0.86rem", fontWeight: 700, color: "#FFE082" }}>
-                  🔗 Connect Render Worker
-                </span>
-                {connectedCloudUrl && (
-                  <span style={{ fontSize: "0.74rem", color: "#69F0AE", background: "rgba(37,211,102,0.15)", padding: "2px 8px", borderRadius: "10px", border: "1px solid rgba(37,211,102,0.3)" }}>
-                    Connected
-                  </span>
-                )}
-              </div>
-              <p style={{ fontSize: "0.78rem", color: "#BDBDBD", margin: "0 0 10px", lineHeight: 1.4 }}>
-                Paste your Render service URL to load the QR code right here on this page:
-              </p>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <input
-                  type="url"
-                  placeholder="https://your-service.onrender.com"
-                  value={cloudUrlInput}
-                  onChange={(e) => {
-                    setCloudUrlInput(e.target.value);
-                    setCloudUrlError("");
-                  }}
-                  style={{
-                    flex: 1,
-                    minWidth: "200px",
-                    padding: "9px 12px",
-                    background: "rgba(255, 255, 255, 0.07)",
-                    border: "1px solid rgba(255, 179, 0, 0.35)",
-                    borderRadius: "8px",
-                    color: "#FFF8E1",
-                    fontSize: "0.82rem",
-                    outline: "none",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleConnectCloudUrl}
-                  style={{
-                    background: "linear-gradient(135deg, #FF8F00, #E65100)",
-                    color: "#FFFFFF",
-                    border: "none",
-                    padding: "9px 16px",
-                    borderRadius: "8px",
-                    fontWeight: 700,
-                    fontSize: "0.82rem",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 8px rgba(230, 81, 0, 0.4)",
-                  }}
-                >
-                  {connectedCloudUrl ? "Update" : "Connect"}
-                </button>
-                {connectedCloudUrl && (
-                  <button
-                    type="button"
-                    onClick={handleDisconnectCloudUrl}
-                    style={{
-                      background: "rgba(255, 255, 255, 0.08)",
-                      color: "#E0E0E0",
-                      border: "1px solid rgba(255, 255, 255, 0.2)",
-                      padding: "9px 12px",
-                      borderRadius: "8px",
-                      fontSize: "0.8rem",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              {cloudUrlError && (
-                <div style={{ color: "#FF8A80", fontSize: "0.76rem", marginTop: "8px", lineHeight: 1.4 }}>
-                  ⚠️ {cloudUrlError}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Right Box: Test Sender & Message Preview */}

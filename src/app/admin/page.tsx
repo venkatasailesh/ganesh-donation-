@@ -163,15 +163,8 @@ export default function AdminPage() {
   // Check WhatsApp status for header indicator
   const checkWhatsApp = useCallback(async () => {
     try {
-      const savedGatewayUrl = typeof window !== "undefined" ? localStorage.getItem("whatsapp_cloud_url") : null;
-      let data;
-      if (savedGatewayUrl) {
-        const res = await fetch(`${savedGatewayUrl.replace(/\/$/, "")}/status`, { signal: AbortSignal.timeout(4000) });
-        data = await res.json();
-      } else {
-        const res = await fetch("/api/whatsapp/local");
-        data = await res.json();
-      }
+      const res = await fetch("/api/whatsapp/local");
+      const data = await res.json();
       setWhatsappConnected(Boolean(data.connected));
       setWhatsappPhone(data.phone || null);
     } catch {
@@ -223,15 +216,9 @@ export default function AdminPage() {
 
     setIsSubmittingManual(true);
     try {
-      const savedGatewayUrl = typeof window !== "undefined" ? localStorage.getItem("whatsapp_cloud_url") : null;
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (savedGatewayUrl) {
-        headers["x-gateway-url"] = savedGatewayUrl;
-      }
-
       const res = await fetch("/api/donate", {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: manualForm.name.trim(),
           phone: cleanPhone,

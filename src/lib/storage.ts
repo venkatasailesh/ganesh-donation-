@@ -1,22 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
 import { Donor } from "./types";
-import { getStore } from "@netlify/blobs";
 
 const DATA_DIR = path.join(process.cwd(), "src", "data");
 const DONORS_FILE = path.join(DATA_DIR, "donors.json");
-
-/**
- * Safe accessor for Netlify Blobs key-value store.
- * Automatically active on Netlify without any configuration.
- */
-function getNetlifyStore() {
-  try {
-    return getStore("ganesh-donations");
-  } catch {
-    return null;
-  }
-}
 
 async function ensureLocalDataFile(): Promise<void> {
   try {
@@ -27,64 +14,31 @@ async function ensureLocalDataFile(): Promise<void> {
   }
 }
 
-async function readLocalDonors(): Promise<Donor[]> {
+/**
+ * Fetch all donors from persistent JSON storage
+ */
+export async function getDonors(): Promise<Donor[]> {
   try {
     await ensureLocalDataFile();
     const data = await fs.readFile(DONORS_FILE, "utf-8");
-    return JSON.parse(data) as Donor[];
-  } catch {
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? (parsed as Donor[]) : [];
+  } catch (err) {
+    console.error("Error reading donors storage:", err);
     return [];
   }
 }
 
-async function writeLocalDonors(donors: Donor[]): Promise<void> {
+/**
+ * Save full donors array to persistent JSON storage
+ */
+export async function saveDonors(donors: Donor[]): Promise<void> {
   try {
     await ensureLocalDataFile();
     await fs.writeFile(DONORS_FILE, JSON.stringify(donors, null, 2), "utf-8");
   } catch (err) {
-    console.error("Local file write error:", err);
+    console.error("Error saving donors storage:", err);
   }
-}
-
-/**
- * Fetch all donors:
- * 1. Tries Netlify Blobs (permanent serverless cloud storage on Netlify).
- * 2. Falls back to local donors.json when running on local machine.
- */
-export async function getDonors(): Promise<Donor[]> {
-  const store = getNetlifyStore();
-  if (store) {
-    try {
-      const data = await store.get("donors", { type: "json" });
-      if (Array.isArray(data)) {
-        return data as Donor[];
-      }
-      return [];
-    } catch (err) {
-      console.warn("Netlify Blobs read error, falling back to local file:", err);
-    }
-  }
-
-  // Local filesystem fallback
-  return await readLocalDonors();
-}
-
-/**
- * Save full donors array:
- * Persists to Netlify Blobs (permanent cloud key-value) AND local file.
- */
-export async function saveDonors(donors: Donor[]): Promise<void> {
-  const store = getNetlifyStore();
-  if (store) {
-    try {
-      await store.setJSON("donors", donors);
-    } catch (err) {
-      console.error("Netlify Blobs save error:", err);
-    }
-  }
-
-  // Also write to local file if available
-  await writeLocalDonors(donors);
 }
 
 /**
@@ -97,7 +51,7 @@ export async function addDonor(donor: Donor): Promise<void> {
 }
 
 /**
- * Update an existing donor by ID
+ * Update an existing donor by ID or receiptId
  */
 export async function updateDonor(updated: {
   id: string;
@@ -141,31 +95,32 @@ export async function deleteDonor(id: string): Promise<boolean> {
  * Clear all donors (wipe database clean for fresh production use)
  */
 export async function clearAllDonors(): Promise<void> {
-  const store = getNetlifyStore();
-  if (store) {
-    try {
-      await store.setJSON("donors", []);
-    } catch (err) {
-      console.error("Netlify Blobs clear error:", err);
-    }
-  }
-  await writeLocalDonors([]);
+  await saveDonors([]);
 }
 
 /**
- * Get donor by receiptId
- */
-export async function getDonorByReceiptId(
-  receiptId: string
-): Promise<Donor | null> {
-  const donors = await getDonors();
-  return donors.find((d) => d.receiptId === receiptId) || null;
-}
-
-/**
- * Get next sequential receipt number
+ * Get next receipt sequence number
  */
 export async function getNextReceiptNumber(): Promise<number> {
   const donors = await getDonors();
-  return donors.length + 1;
+  if (donors.length === 0) return 1;
+
+  const numbers = donors
+    .map((d) => {
+      const match = d.receiptId.match(/(\d+)$/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter((n) => !isNaN(n));
+
+  return numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
 }
+
+/**
+ * Get donor by ID or receiptId
+ */
+export async function getDonorById(id: string): Promise<Donor | null> {
+  const donors = await getDonors();
+  return donors.find((d) => d.id === id || d.receiptId === id) || null;
+}
+
+export const getDonorByReceiptId = getDonorById;
