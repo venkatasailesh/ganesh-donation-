@@ -12,6 +12,14 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") return res.sendStatus(200);
+  next();
+});
+
 const PORT = process.env.PORT || process.env.WHATSAPP_PORT || 5001;
 const AUTH_DIR = path.join(__dirname, "src", "data", "baileys-auth");
 
@@ -53,9 +61,14 @@ async function startWhatsApp() {
         isConnected = false;
         try {
           qrCodeDataUrl = await QRCode.toDataURL(qr, { margin: 2, scale: 6 });
-          console.log("[WhatsApp] Fresh QR code generated. Waiting for scan...");
+          const terminalQR = await QRCode.toString(qr, { type: "terminal", small: true });
+          console.log("\n=======================================================");
+          console.log("👉 SCAN THIS WHATSAPP QR CODE IN TERMINAL / LOGS 👈");
+          console.log("=======================================================");
+          console.log(terminalQR);
+          console.log("=======================================================\n");
         } catch (err) {
-          console.error("Error generating QR data URL:", err);
+          console.error("Error generating QR:", err);
         }
       }
 
@@ -95,6 +108,128 @@ async function startWhatsApp() {
     setTimeout(startWhatsApp, 5000);
   }
 }
+
+// Health check endpoint for cloud hosts (Render, Railway, Fly.io)
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", connected: isConnected, state: connectionState });
+});
+
+// Beautiful Web UI to view & scan the QR code in any browser
+app.get("/", (req, res) => {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRA Hill View — WhatsApp Gateway</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; width: 100%; max-width: 480px; padding: 32px 24px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+    .badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+    .badge-connected { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .badge-waiting { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+    .badge-disconnected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #fff; }
+    p.sub { font-size: 14px; color: #94a3b8; margin-bottom: 24px; }
+    .qr-container { background: #fff; border-radius: 12px; padding: 16px; display: inline-block; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); min-height: 250px; min-width: 250px; display: flex; align-items: center; justify-content: center; }
+    .qr-container img { width: 250px; height: 250px; display: block; }
+    .instructions { text-align: left; background: #0f172a; border-radius: 10px; padding: 16px; margin-bottom: 20px; font-size: 13px; color: #cbd5e1; line-height: 1.6; }
+    .instructions ol { padding-left: 20px; }
+    .instructions li { margin-bottom: 6px; }
+    .btn { background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+    .btn:hover { background: #b91c1c; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot-green { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+    .dot-yellow { background: #facc15; box-shadow: 0 0 8px #facc15; }
+    .dot-red { background: #f87171; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="status-badge" class="badge badge-waiting">
+      <span class="dot dot-yellow pulse"></span>
+      <span id="status-text">Checking WhatsApp Service...</span>
+    </div>
+    <h1>IRA Hill View WhatsApp Gateway</h1>
+    <p class="sub">Automated Ganesh Chaturthi Receipt Delivery</p>
+
+    <div id="content-area">
+      <div class="qr-container">
+        <div id="qr-placeholder" style="color: #64748b; font-size: 14px;">Loading QR code...</div>
+      </div>
+      <div class="instructions">
+        <strong style="color:#fff; display:block; margin-bottom:8px;">How to Connect:</strong>
+        <ol>
+          <li>Open <strong>WhatsApp</strong> on your phone.</li>
+          <li>Tap <strong>Menu (⋮)</strong> or <strong>Settings</strong> ➔ <strong>Linked Devices</strong>.</li>
+          <li>Tap <strong>Link a Device</strong> and point your camera at this QR code.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div id="connected-area" style="display:none; padding: 20px 0;">
+      <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+      <h2 style="font-size: 18px; color: #4ade80; margin-bottom: 8px;">WhatsApp Connected!</h2>
+      <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 20px;">
+        Phone: <strong id="connected-phone" style="color:#fff;"></strong><br/>
+        Service is active and ready to deliver receipts automatically.
+      </p>
+      <button class="btn" onclick="logoutWhatsApp()">Disconnect Phone</button>
+    </div>
+  </div>
+
+  <script>
+    async function updateStatus() {
+      try {
+        const res = await fetch('/status');
+        const data = await res.json();
+
+        const badge = document.getElementById('status-badge');
+        const statusText = document.getElementById('status-text');
+        const contentArea = document.getElementById('content-area');
+        const connectedArea = document.getElementById('connected-area');
+
+        if (data.connected) {
+          badge.className = 'badge badge-connected';
+          badge.innerHTML = '<span class="dot dot-green"></span> Connected';
+          contentArea.style.display = 'none';
+          connectedArea.style.display = 'block';
+          document.getElementById('connected-phone').innerText = '+' + data.phone;
+        } else if (data.qrCodeDataUrl) {
+          badge.className = 'badge badge-waiting';
+          badge.innerHTML = '<span class="dot dot-yellow pulse"></span> Ready to Scan';
+          contentArea.style.display = 'block';
+          connectedArea.style.display = 'none';
+          document.querySelector('.qr-container').innerHTML = '<img src="' + data.qrCodeDataUrl + '" alt="WhatsApp QR Code" />';
+        } else {
+          badge.className = 'badge badge-disconnected';
+          badge.innerHTML = '<span class="dot dot-red"></span> ' + (data.state || 'Initializing...');
+        }
+      } catch (e) {
+        console.error('Error fetching status:', e);
+      }
+    }
+
+    async function logoutWhatsApp() {
+      if (!confirm('Are you sure you want to disconnect this WhatsApp number?')) return;
+      try {
+        await fetch('/logout', { method: 'POST' });
+        location.reload();
+      } catch (e) {
+        alert('Logout error: ' + e.message);
+      }
+    }
+
+    updateStatus();
+    setInterval(updateStatus, 3000);
+  </script>
+</body>
+</html>`);
+});
 
 // REST Endpoints
 app.get("/status", (req, res) => {
@@ -179,7 +314,7 @@ app.post("/logout", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`[WhatsApp Service] Local gateway listening on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`[WhatsApp Service] Local gateway listening on http://0.0.0.0:${PORT}`);
   startWhatsApp();
 });

@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const res = await fetch(`${LOCAL_SERVICE_URL}/status`, {
       cache: "no-store",
-      signal: AbortSignal.timeout(1000),
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) {
       return NextResponse.json({

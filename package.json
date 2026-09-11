@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "whatsapp": "node whatsapp-service.mjs",
+    "start:whatsapp": "node whatsapp-service.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
