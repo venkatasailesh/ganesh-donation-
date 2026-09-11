@@ -399,7 +399,7 @@ export default function WhatsAppGatewayConfig() {
                   Disconnect This Phone
                 </button>
               </div>
-            ) : localStatus.qrCodeDataUrl ? (
+            ) : (
               <div>
                 <div
                   style={{
@@ -410,16 +410,68 @@ export default function WhatsAppGatewayConfig() {
                     boxShadow: "0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(255, 179, 0, 0.3)",
                     border: "3px solid #FFB300",
                     marginBottom: "16px",
+                    minWidth: "244px",
+                    minHeight: "244px",
                   }}
                 >
-                  <Image
-                    src={localStatus.qrCodeDataUrl}
-                    alt="Scan WhatsApp QR Code"
-                    width={220}
-                    height={220}
-                    style={{ display: "block", borderRadius: "8px" }}
-                    unoptimized
-                  />
+                  {localStatus.qrCodeDataUrl ? (
+                    <Image
+                      src={localStatus.qrCodeDataUrl}
+                      alt="Scan WhatsApp QR Code"
+                      width={220}
+                      height={220}
+                      style={{ display: "block", borderRadius: "8px" }}
+                      unoptimized
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 220,
+                        height: 220,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#B7410E",
+                        gap: "10px",
+                        padding: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          border: "3px solid #FFE082",
+                          borderTopColor: "#B7410E",
+                          borderRadius: "50%",
+                          animation: "spin 0.9s linear infinite",
+                        }}
+                      />
+                      <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#870000" }}>
+                        Waiting for WhatsApp QR Code...
+                      </span>
+                      <span style={{ fontSize: "0.72rem", color: "#616161" }}>
+                        Starting gateway on port 5001...
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => fetchLocalStatus()}
+                        style={{
+                          background: "#B7410E",
+                          color: "#FFF",
+                          border: "none",
+                          padding: "6px 14px",
+                          borderRadius: "6px",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Check Again
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <h4
                   style={{
@@ -468,58 +520,6 @@ export default function WhatsAppGatewayConfig() {
                     }}
                   />
                   Auto-refreshing QR code every few seconds
-                </div>
-              </div>
-            ) : (
-              <div style={{ width: "100%", padding: "16px 8px", textAlign: "center" }}>
-                <div
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, rgba(37, 211, 102, 0.25), rgba(18, 140, 126, 0.45))",
-                    border: "2px solid #25D366",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "1.8rem",
-                    margin: "0 auto 14px",
-                    boxShadow: "0 0 20px rgba(37, 211, 102, 0.35)",
-                  }}
-                >
-                  ⚡
-                </div>
-                <h3
-                  style={{
-                    color: "#69F0AE",
-                    fontSize: "1.18rem",
-                    margin: "0 0 6px",
-                    fontWeight: 700,
-                  }}
-                >
-                  Direct 1-Click WhatsApp Active
-                </h3>
-                <p style={{ color: "#E0E0E0", fontSize: "0.85rem", margin: "0 0 14px", lineHeight: 1.5 }}>
-                  Receipts are sent directly to resident WhatsApp numbers with zero pairing or QR scanning needed.
-                </p>
-                <div
-                  style={{
-                    background: "rgba(37, 211, 102, 0.08)",
-                    border: "1px solid rgba(37, 211, 102, 0.25)",
-                    borderRadius: "12px",
-                    padding: "14px",
-                    fontSize: "0.82rem",
-                    color: "#D7CCC8",
-                    textAlign: "left",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  <div style={{ color: "#69F0AE", fontWeight: 700, marginBottom: "4px" }}>
-                    ✓ 100% Ready on Mobile & Desktop
-                  </div>
-                  <div>• Clicking <strong>WhatsApp</strong> on any donor opens their chat with the official receipt text & link.</div>
-                  <div>• No background daemon or phone pairing needed in production.</div>
-                  <div>• Zero third-party fees, unlimited free receipt sharing.</div>
                 </div>
               </div>
             )}

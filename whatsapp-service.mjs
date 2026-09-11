@@ -20,7 +20,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const PORT = process.env.PORT || process.env.WHATSAPP_PORT || 5001;
+const PORT = process.env.WHATSAPP_PORT || process.env.PORT || 5001;
 const AUTH_DIR = path.join(__dirname, "src", "data", "baileys-auth");
 
 let sock = null;
