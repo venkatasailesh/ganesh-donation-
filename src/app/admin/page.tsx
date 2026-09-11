@@ -488,88 +488,96 @@ export default function AdminPage() {
             <span>Add Donation</span>
           </button>
 
-          {/* Official Excel Download Link */}
-          <a
-            href="/api/export/Ira_Hill_View_Ganesh_Donations_2026.xlsx"
-            download="Ira_Hill_View_Ganesh_Donations_2026.xlsx"
-            className="btn-export"
-            style={{
-              background: "linear-gradient(135deg, #2e7d32, #1b5e20)",
-              boxShadow: "0 4px 15px rgba(46, 125, 50, 0.35)",
-              textDecoration: "none",
-              color: "#FFFFFF",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-            title="Download formatted Excel (.xlsx) spreadsheet with multiple sheets"
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="admin-actions-sub">
+            {/* Official Excel Download Link */}
+            <a
+              href="/api/export/Ira_Hill_View_Ganesh_Donations_2026.xlsx"
+              download="Ira_Hill_View_Ganesh_Donations_2026.xlsx"
+              className="btn-export"
+              style={{
+                background: "linear-gradient(135deg, #2e7d32, #1b5e20)",
+                boxShadow: "0 4px 15px rgba(46, 125, 50, 0.35)",
+                textDecoration: "none",
+                color: "#FFFFFF",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              title="Download formatted Excel (.xlsx) spreadsheet with multiple sheets"
             >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span>Excel (.xlsx)</span>
-          </a>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Excel</span>
+            </a>
 
-          {/* Refresh */}
-          <button
-            className="btn-export"
-            onClick={fetchDonors}
-            disabled={isRefreshing}
-            style={{
-              background: "linear-gradient(135deg, #1565c0, #0d47a1)",
-              boxShadow: "0 4px 15px rgba(13, 71, 161, 0.35)",
-              cursor: isRefreshing ? "wait" : "pointer",
-            }}
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ animation: isRefreshing ? "spin 0.8s linear infinite" : "none" }}
-            >
-              <polyline points="23 4 23 10 17 10" />
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
-            {isRefreshing ? "Refreshing..." : "Refresh"}
-          </button>
-
-          {/* Reset Test Data */}
-          {donors.length > 0 && (
+            {/* Refresh */}
             <button
               className="btn-export"
-              onClick={handleClearAllData}
-              title="Clear all test donation records to start fresh in production"
+              onClick={fetchDonors}
+              disabled={isRefreshing}
               style={{
-                background: "rgba(211, 47, 47, 0.15)",
-                border: "1px solid rgba(244, 67, 54, 0.4)",
-                color: "#FF8A80",
-                boxShadow: "none",
-                cursor: "pointer",
+                background: "linear-gradient(135deg, #1565c0, #0d47a1)",
+                boxShadow: "0 4px 15px rgba(13, 71, 161, 0.35)",
+                cursor: isRefreshing ? "wait" : "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
               }}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ animation: isRefreshing ? "spin 0.8s linear infinite" : "none" }}
+              >
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
               </svg>
-              <span>Reset Test Data</span>
+              <span>Refresh</span>
             </button>
-          )}
+
+            {/* Reset Test Data */}
+            {donors.length > 0 && (
+              <button
+                className="btn-export"
+                onClick={handleClearAllData}
+                title="Clear all test donation records to start fresh in production"
+                style={{
+                  background: "rgba(211, 47, 47, 0.15)",
+                  border: "1px solid rgba(244, 67, 54, 0.4)",
+                  color: "#FF8A80",
+                  boxShadow: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -738,14 +746,14 @@ export default function AdminPage() {
           <span>WhatsApp Automation</span>
           <span
             style={{
-              background: whatsappConnected ? "rgba(37, 211, 102, 0.25)" : "rgba(255, 179, 0, 0.25)",
-              color: whatsappConnected ? "#69F0AE" : "#FFD54F",
+              background: whatsappConnected ? "rgba(37, 211, 102, 0.25)" : "rgba(37, 211, 102, 0.2)",
+              color: "#69F0AE",
               padding: "2px 8px",
               borderRadius: "10px",
               fontSize: "0.78rem",
             }}
           >
-            {whatsappConnected ? `Linked (+${whatsappPhone})` : "Setup QR"}
+            {whatsappConnected ? `Linked (+${whatsappPhone})` : "Direct Active"}
           </span>
         </button>
       </div>
@@ -799,6 +807,7 @@ export default function AdminPage() {
           onClick={() => setShowAddModal(false)}
         >
           <div
+            className="modal-dialog-responsive"
             style={{
               width: "100%",
               maxWidth: "490px",
@@ -807,7 +816,7 @@ export default function AdminPage() {
               background: "rgba(26, 13, 4, 0.96)",
               border: "2px solid #FFB300",
               borderRadius: "22px",
-              padding: "28px",
+              padding: "26px 22px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.85)",
             }}
             onClick={(e) => e.stopPropagation()}
@@ -892,7 +901,7 @@ export default function AdminPage() {
               </div>
 
               {/* Flat & Phone Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+              <div className="form-row-2col">
                 <div>
                   <label style={{ display: "block", color: "#FFE082", fontSize: "0.82rem", fontWeight: 600, marginBottom: "5px" }}>
                     Flat Number
@@ -1065,6 +1074,7 @@ export default function AdminPage() {
           onClick={() => setEditingDonor(null)}
         >
           <div
+            className="modal-dialog-responsive"
             style={{
               width: "100%",
               maxWidth: "490px",
@@ -1073,7 +1083,7 @@ export default function AdminPage() {
               background: "rgba(26, 13, 4, 0.96)",
               border: "2px solid #64B5F6",
               borderRadius: "22px",
-              padding: "28px",
+              padding: "26px 22px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.85), 0 0 20px rgba(33, 150, 243, 0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
@@ -1168,7 +1178,7 @@ export default function AdminPage() {
               </div>
 
               {/* Flat & Phone Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+              <div className="form-row-2col">
                 <div>
                   <label style={{ display: "block", color: "#FFE082", fontSize: "0.82rem", fontWeight: 600, marginBottom: "5px" }}>
                     Flat Number

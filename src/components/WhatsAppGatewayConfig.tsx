@@ -19,7 +19,7 @@ export default function WhatsAppGatewayConfig() {
     state: "loading",
   });
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Test send state
   const [testPhone, setTestPhone] = useState("");
@@ -196,13 +196,13 @@ export default function WhatsAppGatewayConfig() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                background: "rgba(255, 179, 0, 0.18)",
-                color: "#FFD54F",
+                background: "rgba(37, 211, 102, 0.15)",
+                color: "#69F0AE",
                 padding: "8px 18px",
                 borderRadius: "30px",
                 fontWeight: 700,
                 fontSize: "0.88rem",
-                border: "1px solid rgba(255, 179, 0, 0.4)",
+                border: "1px solid rgba(37, 211, 102, 0.4)",
               }}
             >
               <span
@@ -210,10 +210,11 @@ export default function WhatsAppGatewayConfig() {
                   width: 10,
                   height: 10,
                   borderRadius: "50%",
-                  background: "#FFB300",
+                  background: "#00E676",
+                  boxShadow: "0 0 8px #00E676",
                 }}
               />
-              Scan QR Code to Link Phone
+              1-Click Direct WhatsApp Active
             </span>
           )}
         </div>
@@ -398,24 +399,56 @@ export default function WhatsAppGatewayConfig() {
                 </div>
               </div>
             ) : (
-              <div style={{ padding: "30px 20px", color: "#FFD54F" }}>
+              <div style={{ width: "100%", padding: "16px 8px", textAlign: "center" }}>
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
-                    border: "3px solid rgba(255,179,0,0.2)",
-                    borderTopColor: "#FFB300",
+                    width: 60,
+                    height: 60,
                     borderRadius: "50%",
-                    margin: "0 auto 16px",
-                    animation: "spin 0.8s linear infinite",
+                    background: "linear-gradient(135deg, rgba(37, 211, 102, 0.25), rgba(18, 140, 126, 0.45))",
+                    border: "2px solid #25D366",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "1.8rem",
+                    margin: "0 auto 14px",
+                    boxShadow: "0 0 20px rgba(37, 211, 102, 0.35)",
                   }}
-                />
-                <p style={{ margin: "0 0 8px", fontWeight: 600 }}>
-                  Generating fresh WhatsApp QR Code...
+                >
+                  ⚡
+                </div>
+                <h3
+                  style={{
+                    color: "#69F0AE",
+                    fontSize: "1.18rem",
+                    margin: "0 0 6px",
+                    fontWeight: 700,
+                  }}
+                >
+                  Direct 1-Click WhatsApp Active
+                </h3>
+                <p style={{ color: "#E0E0E0", fontSize: "0.85rem", margin: "0 0 14px", lineHeight: 1.5 }}>
+                  Receipts are sent directly to resident WhatsApp numbers with zero pairing or QR scanning needed.
                 </p>
-                <p style={{ margin: 0, fontSize: "0.82rem", color: "#BDBDBD" }}>
-                  Please ensure local WhatsApp service is running.
-                </p>
+                <div
+                  style={{
+                    background: "rgba(37, 211, 102, 0.08)",
+                    border: "1px solid rgba(37, 211, 102, 0.25)",
+                    borderRadius: "12px",
+                    padding: "14px",
+                    fontSize: "0.82rem",
+                    color: "#D7CCC8",
+                    textAlign: "left",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  <div style={{ color: "#69F0AE", fontWeight: 700, marginBottom: "4px" }}>
+                    ✓ 100% Ready on Mobile & Desktop
+                  </div>
+                  <div>• Clicking <strong>WhatsApp</strong> on any donor opens their chat with the official receipt text & link.</div>
+                  <div>• No background daemon or phone pairing needed in production.</div>
+                  <div>• Zero third-party fees, unlimited free receipt sharing.</div>
+                </div>
               </div>
             )}
           </div>

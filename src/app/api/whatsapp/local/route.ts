@@ -6,12 +6,13 @@ export async function GET() {
   try {
     const res = await fetch(`${LOCAL_SERVICE_URL}/status`, {
       cache: "no-store",
+      signal: AbortSignal.timeout(1000),
     });
     if (!res.ok) {
       return NextResponse.json({
         available: false,
         connected: false,
-        message: "Local WhatsApp service is starting...",
+        message: "Direct WhatsApp link mode active.",
       });
     }
     const data = await res.json();

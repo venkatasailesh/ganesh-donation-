@@ -385,17 +385,8 @@ export default function DonorTable({ donors, onEdit }: DonorTableProps) {
               </div>
             </div>
 
-            {/* Mobile Thumb Action Buttons: Edit, PDF, WhatsApp */}
-            <div
-              className="mobile-card-actions"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: "8px",
-                paddingTop: "12px",
-                borderTop: "1px solid rgba(255, 215, 0, 0.14)",
-              }}
-            >
+            {/* Mobile Action Buttons: Edit, PDF, WhatsApp */}
+            <div className="mobile-card-actions">
               {/* Edit Donation */}
               <button
                 className="btn-mobile-action"

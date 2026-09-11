@@ -289,12 +289,27 @@ body {
 .modal-content {
   background: #fff;
   border-radius: 24px;
-  padding: 40px;
+  padding: 36px 28px;
   max-width: 480px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-content .receipt-badge {
+  background: #FFF8E1 !important;
+  border: 1.5px solid #FFB300 !important;
+  box-shadow: 0 2px 8px rgba(255, 179, 0, 0.25) !important;
+}
+
+.modal-content .receipt-text {
+  color: #B7410E !important;
+  font-weight: 800 !important;
+}
+
+.modal-content .receipt-star {
+  color: #E65100 !important;
 }
 
 @keyframes fadeIn {
@@ -862,6 +877,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   font-size: 0.82rem;
   color: #D7CCC8;
 }
@@ -874,7 +891,7 @@ body {
   text-decoration: none;
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 5px 10px;
+  padding: 6px 11px;
   border-radius: 8px;
   font-size: 0.84rem;
   font-weight: 500;
@@ -912,6 +929,19 @@ body {
   min-height: 42px;
 }
 
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-actions-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ===== RESPONSIVE STYLES (MOBILE-FIRST OPTIMIZATION) ===== */
 @media (max-width: 767px) {
   .desktop-table-container {
@@ -925,54 +955,93 @@ body {
   }
 
   .admin-container {
-    padding: 14px 10px;
+    padding: 12px 10px 32px;
   }
 
   .admin-header {
     padding: 16px 14px;
-    border-radius: 16px;
-    margin-bottom: 18px;
+    border-radius: 18px;
+    margin-bottom: 16px;
     flex-direction: column;
     align-items: stretch;
     gap: 14px;
   }
 
   .admin-title {
-    font-size: 1.45rem;
+    font-size: 1.35rem !important;
+    line-height: 1.25 !important;
   }
 
   .admin-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
   }
 
   .admin-actions .btn-add-primary {
-    grid-column: span 2;
-    padding: 14px 18px;
-    font-size: 1rem;
-    justify-content: center;
+    width: 100% !important;
+    padding: 13px 18px !important;
+    font-size: 0.98rem !important;
+    justify-content: center !important;
+  }
+
+  .admin-actions-sub {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .admin-actions-sub .btn-export {
+    padding: 9px 6px !important;
+    font-size: 0.76rem !important;
+    justify-content: center !important;
+    text-align: center !important;
+    min-height: 38px !important;
+  }
+
+  .admin-actions-sub .btn-export svg {
+    width: 13px !important;
+    height: 13px !important;
+    flex-shrink: 0;
   }
 
   .stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    margin-bottom: 18px !important;
+    gap: 8px !important;
+    margin-bottom: 16px !important;
   }
 
   .stat-card {
-    padding: 14px 12px !important;
+    padding: 12px 10px !important;
     border-radius: 14px !important;
   }
 
   .stat-label {
-    font-size: 0.7rem !important;
-    margin-bottom: 6px !important;
+    font-size: 0.68rem !important;
+    margin-bottom: 4px !important;
     letter-spacing: 0.04em !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .stat-value {
-    font-size: 1.35rem !important;
+    font-size: 1.2rem !important;
+    word-break: break-word;
+  }
+
+  .stat-sub {
+    font-size: 0.68rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .form-row-2col {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 
   .search-wrapper {
@@ -981,7 +1050,7 @@ body {
 
   .search-input {
     max-width: 100% !important;
-    font-size: 16px !important; /* Prevents iOS auto-zoom on focus */
+    font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
   }
 
   .filter-chips-container {
@@ -991,8 +1060,14 @@ body {
     -webkit-overflow-scrolling: touch;
   }
 
+  .modal-dialog-responsive {
+    padding: 20px 16px !important;
+    border-radius: 20px !important;
+    max-height: 90vh !important;
+  }
+
   .modal-content {
-    padding: 22px 18px;
+    padding: 24px 18px;
     border-radius: 20px;
     max-width: 95vw;
   }
