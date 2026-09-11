@@ -45,7 +45,8 @@ export async function sendReceiptViaGateway(
   donor: Donor,
   pdfBuffer: Buffer,
   pdfFilename: string,
-  publicReceiptUrl?: string
+  publicReceiptUrl?: string,
+  overrideGatewayUrl?: string
 ): Promise<SendReceiptResult> {
   const settings = await getGatewaySettings();
 
@@ -64,22 +65,26 @@ export async function sendReceiptViaGateway(
     recipientPhone,
     pdfBuffer,
     pdfFilename,
-    caption
+    caption,
+    overrideGatewayUrl
   );
 }
 
 /**
  * Direct Local WhatsApp Sender (Multi-Device Baileys)
- * Connects directly to local WhatsApp service on http://localhost:5001
+ * Connects directly to local WhatsApp service on http://localhost:5001 or cloud worker (Render)
  */
 async function sendViaLocalWhatsApp(
   recipientPhone: string,
   pdfBuffer: Buffer,
   pdfFilename: string,
-  caption: string
+  caption: string,
+  overrideGatewayUrl?: string
 ): Promise<SendReceiptResult> {
   try {
-    const localUrl = process.env.WHATSAPP_LOCAL_URL || "http://localhost:5001";
+    const localUrl = (overrideGatewayUrl && overrideGatewayUrl.trim())
+      ? overrideGatewayUrl.trim().replace(/\/$/, "")
+      : (process.env.WHATSAPP_LOCAL_URL || "http://localhost:5001");
     const res = await fetch(`${localUrl}/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

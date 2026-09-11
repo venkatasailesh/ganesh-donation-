@@ -86,12 +86,17 @@ export async function POST(request: NextRequest) {
     let whatsappStatusMessage = "WhatsApp direct chat link generated.";
     try {
       const pdfBuffer = await generateReceiptBuffer(donor);
+      const overrideGatewayUrl =
+        request.headers.get("x-gateway-url") ||
+        (body as { gatewayUrl?: string }).gatewayUrl ||
+        undefined;
       const { sendReceiptViaGateway } = await import("@/lib/whatsappGateway");
       const gatewayResult = await sendReceiptViaGateway(
         donor,
         pdfBuffer,
         pdfFilename,
-        fullReceiptUrl
+        fullReceiptUrl,
+        overrideGatewayUrl
       );
       whatsappSent = gatewayResult.success;
       whatsappStatusMessage = gatewayResult.message;
