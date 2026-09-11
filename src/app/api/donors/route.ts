@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDonors, updateDonor } from "@/lib/storage";
+import { getDonors, updateDonor, deleteDonor, clearAllDonors } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -85,6 +85,47 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating donor:", err);
     return NextResponse.json(
       { success: false, message: "Failed to update donation" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const url = new URL(request.url);
+    const clearAll = url.searchParams.get("clearAll") === "true";
+    const id = url.searchParams.get("id");
+
+    if (clearAll) {
+      await clearAllDonors();
+      return NextResponse.json({
+        success: true,
+        message: "All donation records cleared successfully.",
+      });
+    }
+
+    if (id) {
+      const deleted = await deleteDonor(id);
+      if (!deleted) {
+        return NextResponse.json(
+          { success: false, message: "Donor record not found." },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        message: "Donation record deleted.",
+      });
+    }
+
+    return NextResponse.json(
+      { success: false, message: "Specify ?id=<id> or ?clearAll=true" },
+      { status: 400 }
+    );
+  } catch (err) {
+    console.error("Error deleting donor:", err);
+    return NextResponse.json(
+      { success: false, message: "Failed to delete donation record" },
       { status: 500 }
     );
   }

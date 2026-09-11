@@ -116,6 +116,27 @@ export default function AdminPage() {
     }
   }
 
+  const handleClearAllData = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to clear all test records?\n\nThis will reset the database to 0 so you have a completely clean app for live production donations."
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch("/api/donors?clearAll=true", { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setDonors([]);
+        setRefreshNotice("✓ All test records cleared! Database is now fresh and clean.");
+        setTimeout(() => setRefreshNotice(null), 4000);
+      } else {
+        alert(data.message || "Failed to clear records.");
+      }
+    } catch {
+      alert("Network error clearing records.");
+    }
+  };
+
   const fetchDonors = useCallback(async () => {
     setIsRefreshing(true);
     try {
@@ -527,6 +548,28 @@ export default function AdminPage() {
             </svg>
             {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
+
+          {/* Reset Test Data */}
+          {donors.length > 0 && (
+            <button
+              className="btn-export"
+              onClick={handleClearAllData}
+              title="Clear all test donation records to start fresh in production"
+              style={{
+                background: "rgba(211, 47, 47, 0.15)",
+                border: "1px solid rgba(244, 67, 54, 0.4)",
+                color: "#FF8A80",
+                boxShadow: "none",
+                cursor: "pointer",
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              <span>Reset Test Data</span>
+            </button>
+          )}
         </div>
       </div>
 

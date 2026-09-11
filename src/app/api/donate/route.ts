@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { addDonor, getNextReceiptNumber } from "@/lib/storage";
 import { generateReceiptBuffer } from "@/lib/generateReceipt";
 import { Donor, DonationFormData, DonationResponse } from "@/lib/types";
@@ -57,23 +55,16 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    // Generate PDF receipt
-    const pdfBuffer = await generateReceiptBuffer(donor);
-    const receiptsDir = path.join(process.cwd(), "public", "receipts");
-    await fs.mkdir(receiptsDir, { recursive: true });
-    const pdfFilename = `${receiptId}.pdf`;
-    await fs.writeFile(path.join(receiptsDir, pdfFilename), pdfBuffer);
-
-    // Save donor to storage
+    // Save donor to storage first
     await addDonor(donor);
 
-    // Build WhatsApp deep-link & attempt automated dispatch
-    const dateFormatted = new Date(donor.createdAt).toLocaleDateString("en-IN");
+    const pdfFilename = `${receiptId}.pdf`;
     const receiptUrl = `/api/receipt/${pdfFilename}`;
     const baseUrl = request.nextUrl.origin;
     const fullReceiptUrl = `${baseUrl}${receiptUrl}`;
 
-    // 1. Build WhatsApp deep-link as fallback
+    // Build WhatsApp deep-link (100% reliable, zero external dependencies)
+    const dateFormatted = new Date(donor.createdAt).toLocaleDateString("en-IN");
     const { buildWhatsAppMessage, getWhatsAppDeepLink } = await import("@/lib/whatsapp");
     const messagePayload = {
       toPhone: donor.phone,
@@ -90,14 +81,23 @@ export async function POST(request: NextRequest) {
     const whatsappMessage = buildWhatsAppMessage(messagePayload);
     const whatsappUrl = getWhatsAppDeepLink(donor.phone, whatsappMessage);
 
-    // 2. Automated WhatsApp delivery via Gateway (UltraMsg / Green API)
-    const { sendReceiptViaGateway } = await import("@/lib/whatsappGateway");
-    const gatewayResult = await sendReceiptViaGateway(
-      donor,
-      pdfBuffer,
-      pdfFilename,
-      fullReceiptUrl
-    );
+    // Optional automated WhatsApp delivery via Gateway if configured and available
+    let whatsappSent = false;
+    let whatsappStatusMessage = "WhatsApp direct chat link generated.";
+    try {
+      const pdfBuffer = await generateReceiptBuffer(donor);
+      const { sendReceiptViaGateway } = await import("@/lib/whatsappGateway");
+      const gatewayResult = await sendReceiptViaGateway(
+        donor,
+        pdfBuffer,
+        pdfFilename,
+        fullReceiptUrl
+      );
+      whatsappSent = gatewayResult.success;
+      whatsappStatusMessage = gatewayResult.message;
+    } catch (gwErr) {
+      console.warn("Automated gateway skipped/offline:", gwErr);
+    }
 
     return NextResponse.json({
       success: true,
@@ -106,8 +106,8 @@ export async function POST(request: NextRequest) {
       receiptUrl,
       whatsappUrl,
       donor,
-      whatsappSent: gatewayResult.success,
-      whatsappStatusMessage: gatewayResult.message,
+      whatsappSent,
+      whatsappStatusMessage,
     } as DonationResponse);
   } catch (err) {
     console.error("Donation error:", err);

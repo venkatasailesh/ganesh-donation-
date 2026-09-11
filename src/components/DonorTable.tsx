@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Donor } from "@/lib/types";
+import { buildWhatsAppMessage, getWhatsAppDeepLink } from "@/lib/whatsapp";
 
 interface DonorTableProps {
   donors: Donor[];
@@ -37,47 +38,46 @@ export default function DonorTable({ donors, onEdit }: DonorTableProps) {
     return sortDir === "asc" ? " ↑" : " ↓";
   };
 
+  function getDonorWhatsAppUrl(donor: Donor) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const fullReceiptUrl = `${origin}/api/receipt/${donor.receiptId}.pdf`;
+    const dateFormatted = new Date(donor.createdAt).toLocaleDateString("en-IN");
+    const msg = buildWhatsAppMessage({
+      toPhone: donor.phone,
+      donorName: donor.name,
+      receiptId: donor.receiptId,
+      amount: donor.amount,
+      flatNumber: donor.flatNumber,
+      residentType: donor.residentType,
+      paymentMode: donor.paymentMode,
+      dateStr: dateFormatted,
+      receiptDownloadUrl: fullReceiptUrl,
+    });
+    return getWhatsAppDeepLink(donor.phone, msg);
+  }
+
   async function handleResendWhatsApp(donor: Donor) {
     setSendingReceiptId(donor.receiptId);
     setActionNotice(null);
 
+    // Also trigger background worker if available
     try {
-      const res = await fetch("/api/whatsapp/resend", {
+      fetch("/api/whatsapp/resend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ receiptId: donor.receiptId }),
-      });
-      const data = await res.json();
+      }).catch(() => {});
+    } catch {}
 
-      if (data.success) {
-        setActionNotice({
-          id: donor.receiptId,
-          success: true,
-          message: `✓ Sent PDF receipt to +91 ${donor.phone}!`,
-        });
-      } else if (data.whatsappUrl) {
-        window.open(data.whatsappUrl, "_blank");
-        setActionNotice({
-          id: donor.receiptId,
-          success: true,
-          message: `Opened WhatsApp chat with prefilled message & link.`,
-        });
-      } else {
-        setActionNotice({
-          id: donor.receiptId,
-          success: false,
-          message: data.message || "Failed to dispatch WhatsApp.",
-        });
-      }
-    } catch {
-      setActionNotice({
-        id: donor.receiptId,
-        success: false,
-        message: "Network error sending WhatsApp.",
-      });
-    } finally {
+    setActionNotice({
+      id: donor.receiptId,
+      success: true,
+      message: `✓ Opening WhatsApp chat for ${donor.name} (+91 ${donor.phone})...`,
+    });
+    setTimeout(() => {
       setSendingReceiptId(null);
-    }
+      setActionNotice(null);
+    }, 4000);
   }
 
   function handleFilterSortChange(val: FilterSort) {
@@ -432,11 +432,13 @@ export default function DonorTable({ donors, onEdit }: DonorTableProps) {
                 <span>PDF</span>
               </a>
 
-              {/* WhatsApp */}
-              <button
-                className="btn-mobile-action"
+              {/* Direct WhatsApp Deep-Link */}
+              <a
+                href={getDonorWhatsAppUrl(donor)}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => handleResendWhatsApp(donor)}
-                disabled={sendingReceiptId === donor.receiptId}
+                className="btn-mobile-action"
                 style={{
                   background:
                     sendingReceiptId === donor.receiptId
@@ -445,13 +447,14 @@ export default function DonorTable({ donors, onEdit }: DonorTableProps) {
                   border: "1px solid rgba(37, 211, 102, 0.6)",
                   color: "#FFFFFF",
                   boxShadow: "0 2px 10px rgba(18, 140, 126, 0.35)",
+                  textDecoration: "none",
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.155.57 4.175 1.564 5.923l-1.564 5.905 6.079-1.595c1.679.914 3.593 1.434 5.626 1.434 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12z" />
                 </svg>
-                <span>{sendingReceiptId === donor.receiptId ? "Sending..." : "WhatsApp"}</span>
-              </button>
+                <span>WhatsApp</span>
+              </a>
             </div>
           </div>
         ))}
@@ -693,11 +696,13 @@ export default function DonorTable({ donors, onEdit }: DonorTableProps) {
                         <span>PDF</span>
                       </a>
 
-                      {/* Resend via WhatsApp */}
-                      <button
+                      {/* Direct WhatsApp Deep-Link */}
+                      <a
+                        href={getDonorWhatsAppUrl(donor)}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={() => handleResendWhatsApp(donor)}
-                        disabled={sendingReceiptId === donor.receiptId}
-                        title="Send / Resend PDF Receipt via WhatsApp"
+                        title="Send Official Receipt via WhatsApp"
                         style={{
                           background:
                             sendingReceiptId === donor.receiptId
@@ -709,21 +714,20 @@ export default function DonorTable({ donors, onEdit }: DonorTableProps) {
                           borderRadius: "8px",
                           fontSize: "0.8rem",
                           fontWeight: 700,
-                          cursor: sendingReceiptId === donor.receiptId ? "not-allowed" : "pointer",
+                          cursor: "pointer",
                           display: "inline-flex",
                           alignItems: "center",
                           gap: "4px",
                           boxShadow: "0 2px 8px rgba(18, 140, 126, 0.3)",
+                          textDecoration: "none",
                           transition: "all 0.2s",
                         }}
                       >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.155.57 4.175 1.564 5.923l-1.564 5.905 6.079-1.595c1.679.914 3.593 1.434 5.626 1.434 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12z" />
                         </svg>
-                        <span>
-                          {sendingReceiptId === donor.receiptId ? "Sending..." : "WhatsApp"}
-                        </span>
-                      </button>
+                        <span>WhatsApp</span>
+                      </a>
                     </div>
                   </td>
                 </tr>

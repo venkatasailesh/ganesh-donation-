@@ -276,10 +276,31 @@ export function ReceiptDocument({ donor, ganeshImagePath }: ReceiptProps) {
           <Text style={styles.headerEventTitle}>Ganesh Chaturthi 2026</Text>
         </View>
 
-        {/* Ganesh Image */}
-        <View style={styles.imageSection}>
-          <Image src={ganeshImagePath} style={styles.ganeshImage} />
-        </View>
+        {/* Ganesh Image or Sacred Emblem */}
+        {ganeshImagePath && (ganeshImagePath.startsWith("data:") || ganeshImagePath.startsWith("http")) ? (
+          <View style={styles.imageSection}>
+            <Image src={ganeshImagePath} style={styles.ganeshImage} />
+          </View>
+        ) : (
+          <View style={styles.imageSection}>
+            <View
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: "#FFF8E1",
+                borderWidth: 2,
+                borderColor: "#FFB300",
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 4,
+                marginBottom: 4,
+              }}
+            >
+              <Text style={{ fontSize: 36, color: "#E65100" }}>🕉</Text>
+            </View>
+          </View>
+        )}
 
         {/* Receipt Body */}
         <View style={styles.body}>
@@ -381,14 +402,17 @@ export function ReceiptDocument({ donor, ganeshImagePath }: ReceiptProps) {
 export async function generateReceiptBuffer(donor: Donor): Promise<Buffer> {
   const { renderToBuffer } = await import("@react-pdf/renderer");
   const fs = await import("fs/promises");
-  const ganeshImagePath = path.join(process.cwd(), "public", "ganesh.jpg");
-  
-  let imageSrc = ganeshImagePath;
+
+  let imageSrc = "";
   try {
-    const imgBuffer = await fs.readFile(ganeshImagePath);
-    imageSrc = `data:image/jpeg;base64,${imgBuffer.toString("base64")}`;
-  } catch (err) {
-    console.warn("Could not read ganesh.jpg for base64 embed:", err);
+    const imgPath = path.join(process.cwd(), "public", "ganesh.jpg");
+    const imgBuffer = await fs.readFile(imgPath);
+    if (imgBuffer && imgBuffer.length > 0) {
+      imageSrc = `data:image/jpeg;base64,${imgBuffer.toString("base64")}`;
+    }
+  } catch {
+    // If ganesh.jpg is unavailable in serverless function environment,
+    // ReceiptDocument will gracefully render the sacred golden 🕉 emblem
   }
 
   const buffer = await renderToBuffer(

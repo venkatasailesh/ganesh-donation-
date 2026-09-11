@@ -48,9 +48,8 @@ async function writeLocalDonors(donors: Donor[]): Promise<void> {
 
 /**
  * Fetch all donors:
- * 1. Tries Netlify Blobs (permanent serverless storage when hosted on Netlify).
- * 2. Seeds from local donors.json if Blobs is newly initialized.
- * 3. Falls back to local donors.json when running on local machine.
+ * 1. Tries Netlify Blobs (permanent serverless cloud storage on Netlify).
+ * 2. Falls back to local donors.json when running on local machine.
  */
 export async function getDonors(): Promise<Donor[]> {
   const store = getNetlifyStore();
@@ -59,12 +58,6 @@ export async function getDonors(): Promise<Donor[]> {
       const data = await store.get("donors", { type: "json" });
       if (Array.isArray(data)) {
         return data as Donor[];
-      }
-      // First deploy on Netlify: seed Blobs with initial records from local file
-      const localDonors = await readLocalDonors();
-      if (localDonors.length > 0) {
-        await store.setJSON("donors", localDonors);
-        return localDonors;
       }
       return [];
     } catch (err) {
@@ -131,6 +124,32 @@ export async function updateDonor(updated: {
 
   await saveDonors(donors);
   return donors[idx];
+}
+
+/**
+ * Delete a donor by ID or receiptId
+ */
+export async function deleteDonor(id: string): Promise<boolean> {
+  const donors = await getDonors();
+  const filtered = donors.filter((d) => d.id !== id && d.receiptId !== id);
+  if (filtered.length === donors.length) return false;
+  await saveDonors(filtered);
+  return true;
+}
+
+/**
+ * Clear all donors (wipe database clean for fresh production use)
+ */
+export async function clearAllDonors(): Promise<void> {
+  const store = getNetlifyStore();
+  if (store) {
+    try {
+      await store.setJSON("donors", []);
+    } catch (err) {
+      console.error("Netlify Blobs clear error:", err);
+    }
+  }
+  await writeLocalDonors([]);
 }
 
 /**

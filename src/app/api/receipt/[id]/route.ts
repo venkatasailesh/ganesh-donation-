@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { getDonorByReceiptId } from "@/lib/storage";
 import { generateReceiptBuffer } from "@/lib/generateReceipt";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
@@ -11,56 +11,32 @@ export async function GET(
   try {
     const { id } = await params;
     let safeName = id.replace(/[^a-zA-Z0-9\-\.]/g, "");
+    const receiptId = safeName.replace(/\.pdf$/i, "");
 
-    if (!safeName.endsWith(".pdf")) {
-      safeName = `${safeName}.pdf`;
-    }
-
-    const receiptsDir = path.join(process.cwd(), "public", "receipts");
-    const filePath = path.join(receiptsDir, safeName);
-
-    // Check if file exists; if not, try to regenerate from database
-    let fileExists = false;
-    try {
-      await fs.access(filePath);
-      fileExists = true;
-    } catch {
-      fileExists = false;
-    }
-
-    if (!fileExists) {
-      const receiptId = safeName.replace(/\.pdf$/, "");
-      const donor = await getDonorByReceiptId(receiptId);
-      if (donor) {
-        await fs.mkdir(receiptsDir, { recursive: true });
-        const newPdfBuffer = await generateReceiptBuffer(donor);
-        await fs.writeFile(filePath, newPdfBuffer);
-        fileExists = true;
-      }
-    }
-
-    if (!fileExists) {
+    const donor = await getDonorByReceiptId(receiptId);
+    if (!donor) {
       return NextResponse.json(
-        { error: "Receipt not found" },
+        { error: `Receipt "${receiptId}" not found in database.` },
         { status: 404 }
       );
     }
 
-    const fileBuffer = await fs.readFile(filePath);
+    // In-memory PDF buffer generation (100% serverless compatible, zero read-only filesystem writes)
+    const pdfBuffer = await generateReceiptBuffer(donor);
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${safeName}"`,
-        "Content-Length": String(fileBuffer.length),
-        "Cache-Control": "public, max-age=3600",
+        "Content-Disposition": `inline; filename="${receiptId}.pdf"`,
+        "Content-Length": String(pdfBuffer.length),
+        "Cache-Control": "public, max-age=3600, s-maxage=86400",
       },
     });
   } catch (err) {
-    console.error("Receipt download error:", err);
+    console.error("Receipt generation error:", err);
     return NextResponse.json(
-      { error: "Failed to download receipt" },
+      { error: "Failed to generate receipt PDF" },
       { status: 500 }
     );
   }
