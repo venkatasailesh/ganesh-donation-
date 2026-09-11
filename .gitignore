@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# WhatsApp session auth data
+src/data/baileys-auth/
+
+# Generated PDF receipts and test files
+public/receipts/
+*.xlsx
+
