@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 
-const PORT = process.env.WHATSAPP_PORT || 5001;
+const PORT = process.env.PORT || process.env.WHATSAPP_PORT || 5001;
 const AUTH_DIR = path.join(__dirname, "src", "data", "baileys-auth");
 
 let sock = null;
