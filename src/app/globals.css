@@ -942,6 +942,22 @@ body {
   gap: 8px;
 }
 
+.admin-nav-tabs {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.2);
+  padding-bottom: 14px;
+}
+
+.test-send-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
 /* ===== RESPONSIVE STYLES (MOBILE-FIRST OPTIMIZATION) ===== */
 @media (max-width: 767px) {
   .desktop-table-container {
@@ -952,6 +968,19 @@ body {
     display: flex !important;
     flex-direction: column;
     gap: 14px;
+  }
+
+  .mobile-card-actions {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .mobile-card-actions .btn-mobile-whatsapp {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-height: 44px !important;
+    font-size: 0.9rem !important;
+    padding: 12px 14px !important;
   }
 
   .admin-container {
@@ -986,62 +1015,104 @@ body {
     justify-content: center !important;
   }
 
+  /* Two equal columns for Excel & Refresh, and Reset spans full width below */
   .admin-actions-sub {
     display: grid !important;
-    grid-template-columns: 1fr 1fr 1fr !important;
-    gap: 6px !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
     width: 100% !important;
   }
 
   .admin-actions-sub .btn-export {
-    padding: 9px 6px !important;
-    font-size: 0.76rem !important;
+    padding: 10px 12px !important;
+    font-size: 0.82rem !important;
     justify-content: center !important;
     text-align: center !important;
-    min-height: 38px !important;
+    min-height: 42px !important;
+    border-radius: 10px !important;
   }
 
   .admin-actions-sub .btn-export svg {
-    width: 13px !important;
-    height: 13px !important;
+    width: 15px !important;
+    height: 15px !important;
     flex-shrink: 0;
   }
 
+  .admin-actions-sub .btn-reset-full {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+
+  /* Navigation Tabs on Mobile */
+  .admin-nav-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .admin-nav-tab-btn {
+    padding: 10px 8px !important;
+    font-size: 0.8rem !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    text-align: center !important;
+    border-radius: 12px !important;
+  }
+
+  /* Stats Grid on Mobile */
   .stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
-    margin-bottom: 16px !important;
+    gap: 10px !important;
+    margin-bottom: 18px !important;
   }
 
   .stat-card {
-    padding: 12px 10px !important;
-    border-radius: 14px !important;
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
   }
 
   .stat-label {
-    font-size: 0.68rem !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
     margin-bottom: 4px !important;
-    letter-spacing: 0.04em !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    letter-spacing: 0.03em !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
   }
 
   .stat-value {
-    font-size: 1.2rem !important;
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
     word-break: break-word;
+    margin: 4px 0 !important;
   }
 
   .stat-sub {
-    font-size: 0.68rem !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.72rem !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
   }
 
   .form-row-2col {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
+  }
+
+  .test-send-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .test-send-row input,
+  .test-send-row button {
+    width: 100% !important;
+  }
+
+  .test-send-row button {
+    justify-content: center !important;
+    padding: 12px !important;
   }
 
   .search-wrapper {
@@ -1056,12 +1127,13 @@ body {
   .filter-chips-container {
     overflow-x: auto;
     white-space: nowrap;
-    padding-bottom: 6px;
+    padding-bottom: 8px;
     -webkit-overflow-scrolling: touch;
+    width: 100%;
   }
 
   .modal-dialog-responsive {
-    padding: 20px 16px !important;
+    padding: 20px 16px 28px !important;
     border-radius: 20px !important;
     max-height: 90vh !important;
   }

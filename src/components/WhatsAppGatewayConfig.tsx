@@ -483,7 +483,7 @@ export default function WhatsAppGatewayConfig() {
                 Send a sample devotional PDF receipt to any phone number to test WhatsApp delivery right now.
               </p>
 
-              <div style={{ display: "flex", gap: "10px", marginBottom: "14px" }}>
+              <div className="test-send-row" style={{ gap: "10px", marginBottom: "14px" }}>
                 <input
                   type="tel"
                   placeholder="Enter 10-digit number (e.g. 9849740645)"
